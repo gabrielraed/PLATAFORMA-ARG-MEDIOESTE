@@ -1,0 +1,126 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions for institutional role-based access control (RBAC)
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (request.auth.token.role == 'ADMIN' || request.auth.token.role == 'SUPER_ADMIN');
+    }
+
+    function isInstitutional() {
+      return isAuthenticated() &&
+        (request.auth.token.verificationStatus == 'INSTITUTIONAL' ||
+         request.auth.token.verificationStatus == 'PREMIUM_VERIFIED');
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAdmin();
+    }
+
+    // Investment Opportunities Marketplace
+    match /opportunities/{opportunityId} {
+      // Public / verified read
+      allow read: if true;
+      allow create, update: if isAuthenticated() && (isInstitutional() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Investors Directory
+    match /investors/{investorId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(investorId) || isAdmin();
+    }
+
+    // Companies & Enterprises Directory
+    match /companies/{companyId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(companyId) || isAdmin();
+    }
+
+    // Bilateral Introductions
+    match /introductions/{introId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.fromUserId == request.auth.uid ||
+         resource.data.targetId == request.auth.uid ||
+         isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isAdmin() || resource.data.targetId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Virtual Data Rooms (VDR) & Confidential Documents
+    match /dealRooms/{roomId} {
+      allow read: if isAuthenticated() &&
+        (resource.data.members[request.auth.uid] != null || isAdmin());
+      allow write: if isAuthenticated() &&
+        (resource.data.ownerId == request.auth.uid || isAdmin());
+
+      match /documents/{documentId} {
+        allow read: if isAuthenticated() &&
+          (get(/databases/$(database)/documents/dealRooms/$(roomId)).data.members[request.auth.uid] != null ||
+           isAdmin());
+        allow write: if isAdmin() ||
+          get(/databases/$(database)/documents/dealRooms/$(roomId)).data.ownerId == request.auth.uid;
+      }
+
+      match /auditLogs/{logId} {
+        allow read: if isAuthenticated() &&
+          (get(/databases/$(database)/documents/dealRooms/$(roomId)).data.ownerId == request.auth.uid || isAdmin());
+        allow create: if isAuthenticated();
+        allow update, delete: if false; // Immutable audit log
+      }
+    }
+
+    // Private Messaging Threads
+    match /conversations/{conversationId} {
+      allow read, write: if isAuthenticated() &&
+        (resource.data.participants[request.auth.uid] != null || isAdmin());
+
+      match /messages/{messageId} {
+        allow read, create: if isAuthenticated() &&
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants[request.auth.uid] != null;
+        allow update, delete: if false;
+      }
+    }
+
+    // Bilateral Events & Summits
+    match /events/{eventId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /attendees/{userId} {
+        allow read: if isAuthenticated();
+        allow write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Strategic Market Intelligence Reports
+    match /reports/{reportId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // CRM Deals Pipeline (Admin only)
+    match /crmDeals/{dealId} {
+      allow read, write: if isAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read, update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated();
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}

@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Cinzel', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-arabic: 'Tajawal', -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #070d18;
+    color: #e2e8f0;
+    overflow-x: hidden;
+  }
+
+  [dir="rtl"] {
+    font-family: var(--font-arabic);
+  }
+}
+
+/* Custom geometric gold pattern & institutional backgrounds */
+.bg-ambc-dark {
+  background-color: #070d18;
+}
+
+.bg-ambc-surface {
+  background-color: #0d172a;
+}
+
+.bg-ambc-card {
+  background-color: #111d35;
+}
+
+.bg-ambc-card-hover:hover {
+  background-color: #162544;
+}
+
+.border-ambc-gold {
+  border-color: rgba(197, 160, 89, 0.35);
+}
+
+.border-ambc-gold-strong {
+  border-color: rgba(197, 160, 89, 0.85);
+}
+
+.text-ambc-gold {
+  color: #c5a059;
+}
+
+.text-ambc-gold-light {
+  color: #dfba73;
+}
+
+.bg-gold-gradient {
+  background: linear-gradient(135deg, #dfba73 0%, #c5a059 50%, #9a7736 100%);
+}
+
+.text-gold-gradient {
+  background: linear-gradient(135deg, #dfba73 0%, #c5a059 50%, #b89047 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtle arabesque geometric grid pattern */
+.bg-arabesque-pattern {
+  background-image: radial-gradient(rgba(197, 160, 89, 0.08) 1px, transparent 1px),
+    radial-gradient(rgba(197, 160, 89, 0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0, 16px 16px;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: #070d18;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e335e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c5a059;
+}

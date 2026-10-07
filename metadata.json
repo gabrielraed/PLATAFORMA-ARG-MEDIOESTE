@@ -1,0 +1,6 @@
+{
+  "name": "AMBC Connect | Argentina – Middle East Business & Investment Platform",
+  "description": "Connecting Capital, Opportunities & People. Private business and investment platform connecting Argentine companies, investors, and strategic opportunities with the Middle East.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
